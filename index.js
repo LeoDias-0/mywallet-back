@@ -24,4 +24,4 @@ app.post('/new-outcome', outcome)
 
 app.delete('/', logout)
 
-app.listen(4000)
+export default app

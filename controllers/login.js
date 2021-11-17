@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
 import { v4 as uuid } from 'uuid'
 import connection from '../database/database.js'
+import validateLogin from '../validations/validateLogin.js'
 
 const login = async (req, res) => {
     
@@ -8,14 +9,14 @@ const login = async (req, res) => {
 
     try {
 
-        // TODO testar
+        const loginIsNotValid = validateLogin.validate(req.body).error
+        if (loginIsNotValid) return res.status(422).send('Dados inválidos.')
 
         const users = await connection.query(`
             SELECT * FROM users WHERE email = $1;
         `, [email]).then(({ rows }) => rows)
         if (!users[0]) {
-            res.status(409).send('Email não cadastrado!')
-            return
+            return res.status(409).send('Email não cadastrado!')
         }
 
         const hashedPassword = users[0].password
@@ -23,8 +24,7 @@ const login = async (req, res) => {
         const isTheSamePassword = bcrypt.compareSync(password, hashedPassword)
 
         if (!isTheSamePassword) {
-            res.status(409).send('Senha incorreta!')
-            return
+            return res.status(409).send('Senha incorreta!')
         }
 
         const token = uuid()
@@ -32,15 +32,14 @@ const login = async (req, res) => {
             INSERT INTO sessions (token, id) VALUES ($1, $2);
         `, [token, users[0].id])
 
-        res.status(200).send({
+        return res.status(200).send({
             name: users[0].name,
             token,
         })
-        return
         
     } catch (error) {
         console.log(error)
-        res.status(500)
+        return res.status(500)
     }
 }
 

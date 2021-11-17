@@ -19,6 +19,8 @@ const outcome = async (req, res) => {
             INSERT INTO records ( "userId", date, description, value, "isIncome") VALUES ($1, $2, $3, $4, $5);
         `, [sessions[0].id, date, description, value, isIncome])
 
+        return res.sendStatus(200)
+
     } catch (error) {
         console.log(error)
         res.status(500)

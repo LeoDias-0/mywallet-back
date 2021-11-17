@@ -1,16 +1,16 @@
 import bcrypt from 'bcrypt'
 import { v4 as uuid } from 'uuid'
 import connection from '../database/database.js'
+import validateSign from '../validations/validateSign.js'
 
 const signIn = async (req, res) => {
     
     const { name, email, password } = req.body
 
     try {
-        console.log(req.body)
 
-        // TODO testar
-        // validar se são dados válidos
+        const signInIsNotValid = validateSign.validate(req.body).error
+        if (signInIsNotValid) return res.status(422).send('Dados inválidos.')
 
         const users = await connection.query(`
             SELECT * FROM users WHERE email = $1;
